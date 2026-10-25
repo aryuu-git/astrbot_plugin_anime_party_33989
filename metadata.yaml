@@ -1,0 +1,9 @@
+name: astrbot_plugin_anime_party_33989
+display_name: 动画派对 · Emoji猜动画
+desc: 自带30道题，支持三层提示、别名判题、难度切换和重启续局；可选AI主持，复用当前模型与人格。
+version: 0.1.0
+author: aryuu-git
+repo: https://github.com/aryuu-git/astrbot_plugin_anime_party_33989
+astrbot_version: ">=4.28.0,<5"
+support_platforms:
+  - aiocqhttp
