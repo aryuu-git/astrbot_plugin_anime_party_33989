@@ -15,7 +15,7 @@ from .game.service import GameService
 PLUGIN_ID = "astrbot_plugin_anime_party_33989"
 
 
-@register(PLUGIN_ID, "aryuu-git", "Emoji 猜动画：确定性判题、分层提示、可选AI主持", "0.1.0")
+@register(PLUGIN_ID, "aryuu-git", "Emoji 猜动画：确定性判题、分层提示、可选AI主持", "0.1.1")
 class AnimePartyPlugin(Star):
     def __init__(self, context: Context, config):
         super().__init__(context)
@@ -46,7 +46,7 @@ class AnimePartyPlugin(Star):
             timeout=float(self.config.get("round_timeout_minutes", 15)) * 60,
             recent_limit=int(self.config.get("recent_question_limit", 8)),
             plain_answers=bool(self.config.get("allow_known_title_answers", True)),
-            shortcuts=bool(self.config.get("enable_shortcuts", False)),
+            shortcuts=bool(self.config.get("enable_shortcuts", True)),
         )
 
     def _allowed(self, session):
@@ -144,7 +144,7 @@ class AnimePartyPlugin(Star):
         response = await self.context.llm_generate(
             chat_provider_id=provider_id,
             system_prompt=persona
-            + "\n你在主持Emoji猜动画。只写一句不超过40字的简短情绪引子，不写题目、作品名、角色、线索、判题结论或规则。固定游戏信息会由程序附加。禁止索要或猜测隐藏答案。",
+            + "\n你在和熟人玩Emoji猜动画。可返回空字符串；若确实需要接话，只写一句不超过12字的自然短句。不要自报姓名、撒娇、说自己期待大家推理，也不要每次重复宣布新题开始。不要写题目、作品名、角色、线索、判题结论或规则。固定游戏信息由程序附加，禁止索要或猜测隐藏答案。",
             prompt=json.dumps(expression_payload(reply), ensure_ascii=False),
         )
         lead = response.completion_text.strip()

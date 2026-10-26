@@ -83,6 +83,16 @@ async def main():
         async for _ in stage.process(plain):
             pass
         assert reached and not plain.is_stopped()
+        reached.clear()
+        hint = event("提示", "m3")
+        hint.set_extra("activated_handlers", [first, second])
+        hint.set_extra("handlers_parsed_params", {})
+        hint_count = 0
+        async for _ in stage.process(hint):
+            if hint.get_result():
+                hint_count += 1
+                assert any("提示 1/3" in getattr(x, "text", "") for x in hint.get_result().chain)
+        assert hint_count == 1 and hint.is_stopped() and not reached
         print(
             "REAL AstrBot events + processing stage: one game reply, later handler blocked, ordinary chat passes: PASS"
         )

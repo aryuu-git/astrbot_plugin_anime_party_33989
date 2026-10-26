@@ -2,6 +2,7 @@
 
 import hashlib
 import zipfile
+import tomllib
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
@@ -22,7 +23,8 @@ paths = [
 paths += sorted((root / "game").glob("*.py"))
 paths += [root / "game/data/questions.zh-CN.json"]
 paths += sorted((root / "docs").glob("*.md"))
-dest = root / "dist" / f"{root.name}-0.1.0.zip"
+version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+dest = root / "dist" / f"{root.name}-{version}.zip"
 dest.parent.mkdir(exist_ok=True)
 with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as archive:
     for p in paths:

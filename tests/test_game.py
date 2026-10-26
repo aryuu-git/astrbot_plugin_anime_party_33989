@@ -57,8 +57,29 @@ class GameTests(unittest.TestCase):
         before = self.game.state("qq:group:1")
         self.assertFalse(self.send("晚上大家要不要一起吃饭？").consumed)
         self.assertFalse(self.send("我猜你今天晚上要加班吧").consumed)
-        self.assertFalse(self.send("提示").consumed)
         self.assertEqual(self.game.state("qq:group:1"), before)
+
+    def test_natural_hint_is_game_not_chat(self):
+        self.send("/猜动画 开始")
+        for phrase, level in [("提示", 1), ("提示一下", 2), ("给点提示", 3)]:
+            result = self.send(phrase)
+            self.assertTrue(result.consumed)
+            self.assertEqual(result.reply.kind, ReplyKind.HINT)
+            self.assertEqual(result.reply.hint_level, level)
+
+    def test_natural_controls_only_inside_active_game(self):
+        for phrase in ("提示", "答案", "暂停", "下一题"):
+            self.assertFalse(self.send(phrase).consumed)
+        self.send("/猜动画 开始")
+        self.assertEqual(self.send("下一题").reply.kind, ReplyKind.QUESTION)
+        self.assertEqual(self.send("答案").reply.kind, ReplyKind.REVEALED)
+        self.assertFalse(self.send("提示").consumed)
+
+    def test_shortcuts_can_still_be_explicitly_disabled(self):
+        self.game = self.service(shortcuts=False)
+        self.send("/猜动画 开始")
+        self.assertFalse(self.send("提示").consumed)
+        self.assertEqual(self.send("/猜动画 提示").reply.kind, ReplyKind.HINT)
 
     def test_known_wrong_title_is_an_answer(self):
         self.send("/猜动画 开始")

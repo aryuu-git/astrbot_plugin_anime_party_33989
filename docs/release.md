@@ -1,10 +1,10 @@
 # 发布与验收
 
-版本：0.1.0。源码与安装包发布以[GitHub仓库](https://github.com/aryuu-git/astrbot_plugin_anime_party_33989)为准；AstrBot官方插件市场尚未提交。
+版本：0.1.1。源码与安装包发布以[GitHub仓库](https://github.com/aryuu-git/astrbot_plugin_anime_party_33989)为准；AstrBot官方插件市场尚未提交。
 
 ## 已验证（2026-10-26，Asia/Shanghai）
 
-- 32项领域与适配行为测试通过；Python 3.12和3.14均已运行。
+- 0.1.1共有36项领域与适配行为测试，新增自然口令、游戏外放行、显式关闭及阻断后续聊天的回归检查；Python 3.12和3.14均已运行。
 - Ruff代码检查通过。
 - AstrBot 4.29.3真实模块导入与所需API检查通过。
 - 使用真实AstrBot事件对象和插件处理阶段验证：游戏产生一份结果并阻止后续聊天处理器，普通聊天放行。验证不发送真实QQ消息。

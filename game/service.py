@@ -57,7 +57,7 @@ class GameService:
         timeout=900,
         recent_limit=8,
         plain_answers=True,
-        shortcuts=False,
+        shortcuts=True,
         clock=time.time,
     ):
         self.path, self.catalog, self.clock = path, catalog, clock
@@ -143,6 +143,17 @@ class GameService:
             guess = text[2:].lstrip(" ：:")
             return "@guess:" + guess if guess else None
         if self.shortcuts:
+            conversational = {
+                "提示一下": "提示",
+                "给点提示": "提示",
+                "再提示一下": "提示",
+                "来点提示": "提示",
+                "换一个": "下一题",
+                "换一题": "下一题",
+                "揭晓": "公布答案",
+            }
+            if text in conversational:
+                return conversational[text]
             if text in (
                 "来一个",
                 "再来",
@@ -150,9 +161,14 @@ class GameService:
                 "提示",
                 "给个提示",
                 "公布答案",
+                "答案",
+                "公布",
                 "暂停",
+                "不玩了",
                 "简单点",
+                "简单",
                 "难一点",
+                "困难",
                 "普通",
             ):
                 return text

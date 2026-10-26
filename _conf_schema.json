@@ -5,7 +5,7 @@
   "round_timeout_minutes": {"type": "int", "description": "每题限时（分钟）", "default": 15, "hint": "0关闭；每30秒检查并尝试揭晓，断连可能影响送达。"},
   "recent_question_limit": {"type": "int", "description": "近期避重题数", "default": 8},
   "allow_known_title_answers": {"type": "bool", "description": "允许直接发送题库作品名作答", "default": true, "hint": "仅进行中的游戏生效；其他猜测使用“我猜 动画名”。"},
-  "enable_shortcuts": {"type": "bool", "description": "游戏中启用简短口令", "default": false, "hint": "允许提示、暂停、下一题等短语；游戏外仍需 /猜动画 开始。"},
+  "enable_shortcuts": {"type": "bool", "description": "游戏中启用简短口令", "default": true, "hint": "活动题目中直接说提示、答案、暂停、下一题等；游戏外不会截取这些普通词语。0.1.0升级用户需手动开启。"},
   "ai_expression": {"type": "bool", "description": "AI主持引子", "default": false, "hint": "复用当前会话模型与人格；关闭、超时或模型故障均使用固定文案。引子不参与判题。"},
   "provider_id": {"type": "string", "description": "主持模型ID（留空使用会话模型）", "default": "", "_special": "select_provider"},
   "ai_timeout_seconds": {"type": "int", "description": "AI主持超时（秒）", "default": 10}

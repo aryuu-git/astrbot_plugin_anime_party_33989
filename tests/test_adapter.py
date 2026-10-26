@@ -102,6 +102,14 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(event.extra["anime_party_consumed"])
         self.context.llm_generate.assert_not_awaited()
 
+    async def test_hint_is_consumed_before_regular_chat(self):
+        await self.run_event(Event("/猜动画 开始", mid="start"))
+        event = Event("提示", mid="hint")
+        result = await self.run_event(event)
+        self.assertTrue(event.stopped)
+        self.assertIn("提示 1/3", result[0])
+        self.context.llm_generate.assert_not_awaited()
+
     async def test_plain_chat_and_other_session_pass_through(self):
         for event in [Event("晚上吃什么"), Event("/猜动画 开始", session="qq:group:other")]:
             self.assertEqual(await self.run_event(event), [])
