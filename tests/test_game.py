@@ -38,6 +38,20 @@ class GameTests(unittest.TestCase):
             {Difficulty.EASY: 12, Difficulty.NORMAL: 12, Difficulty.HARD: 6},
         )
 
+    def test_bundled_emoji_matrix_and_rendering(self):
+        for question in self.catalog.questions:
+            rows = question.emoji.splitlines()
+            self.assertTrue(3 <= len(rows) <= 4, question.title)
+            self.assertTrue(all(6 <= len(row.split()) <= 8 for row in rows), question.title)
+        result = self.send("/猜动画 开始")
+        self.assertTrue(result.messages[0].startswith("猜猜这部动画：\n"))
+        self.assertEqual(len(result.messages[0].splitlines()), 4)
+
+    def test_common_fullmetal_title_accepted(self):
+        question = self.catalog.get(1428)
+        self.assertTrue(question.accepts("钢之炼金术师"))
+        self.assertTrue(question.accepts("钢炼"))
+
     def test_full_flow(self):
         start = self.send("/猜动画 开始")
         self.assertEqual(start.reply.kind, ReplyKind.QUESTION)

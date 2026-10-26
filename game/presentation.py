@@ -27,7 +27,7 @@ class ChineseGamePresenter:
                 return ()
             case ReplyKind.QUESTION:
                 assert question is not None
-                return (f"猜猜这部动画：{question.emoji}",)
+                return (f"猜猜这部动画：\n{question.emoji}",)
             case ReplyKind.DIFFICULTY_CHANGED:
                 assert question is not None and reply.difficulty is not None
                 label = {
@@ -35,7 +35,7 @@ class ChineseGamePresenter:
                     Difficulty.NORMAL: "普通",
                     Difficulty.HARD: "困难",
                 }[reply.difficulty]
-                return (f"已切换为{label}难度。", f"猜猜这部动画：{question.emoji}")
+                return (f"已切换为{label}难度。", f"猜猜这部动画：\n{question.emoji}")
             case ReplyKind.PAUSED:
                 return ("游戏已暂停。想继续时，对我说“来一个”。",)
             case ReplyKind.NO_ACTIVE_QUESTION:

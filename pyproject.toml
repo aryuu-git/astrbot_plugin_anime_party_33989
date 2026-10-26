@@ -1,6 +1,6 @@
 [project]
 name = "astrbot-plugin-anime-party-33989"
-version = "0.1.1"
+version = "0.1.2"
 description = "Deterministic Emoji anime guessing game for AstrBot"
 requires-python = ">=3.11"
 

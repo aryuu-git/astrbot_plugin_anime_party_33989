@@ -1,5 +1,7 @@
 # 自定义题包
 
+内置题包从0.1.2起使用三行Emoji；自定义 `emoji` 字段可用JSON转义 `\n` 分行，推荐3至4行、每行6至8个以空格分隔的完整Emoji。下面的单行示例仍兼容。
+
 在AstrBot插件数据目录中放置 `custom_questions.json`，配置 `question_source=custom` 使用纯自定义包，或 `merged` 合并内置包。同一subject_id由自定义条目覆盖；单个题包内不允许重复ID。
 
 ```json

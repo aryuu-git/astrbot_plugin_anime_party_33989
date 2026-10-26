@@ -200,7 +200,7 @@ class GameService:
                 q = self.catalog.get(state.get("current_subject_id")) if active else None
                 line = "进行中" if active else "暂无进行中的题目"
                 if q:
-                    line += f"：{q.emoji}，已用提示 {state.get('hint_level', 0)}/3"
+                    line += f"：\n{q.emoji}\n已用提示 {state.get('hint_level', 0)}/3"
                 return Outcome(True, (line,))
             if action == "@clear":
                 if not admin:

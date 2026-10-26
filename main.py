@@ -15,7 +15,7 @@ from .game.service import GameService
 PLUGIN_ID = "astrbot_plugin_anime_party_33989"
 
 
-@register(PLUGIN_ID, "aryuu-git", "Emoji 猜动画：确定性判题、分层提示、可选AI主持", "0.1.1")
+@register(PLUGIN_ID, "aryuu-git", "Emoji 猜动画：确定性判题、分层提示、可选AI主持", "0.1.2")
 class AnimePartyPlugin(Star):
     def __init__(self, context: Context, config):
         super().__init__(context)
