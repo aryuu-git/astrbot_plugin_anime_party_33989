@@ -80,6 +80,9 @@ class Event:
     def plain_result(self, text):
         return text
 
+    async def send(self, result):
+        self.extra["progress_sent"] = result
+
 
 class AdapterTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -90,6 +93,12 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
             get_current_chat_provider_id=AsyncMock(return_value="existing-provider"),
             llm_generate=AsyncMock(return_value=SimpleNamespace(completion_text="准备好下一道挑战吧。")),
         )
+        raw = json.loads((ROOT / "tests/fixtures/synthetic.json").read_text(encoding="utf-8"))[1]
+        self.question = ADAPTER.GameService._decode_question(raw)
+        self.generator = AsyncMock(return_value=self.question)
+        mocker = patch.object(ADAPTER, "generate_question", self.generator)
+        mocker.start()
+        self.addCleanup(mocker.stop)
         self.plugin = ADAPTER.AnimePartyPlugin(self.context, {"allowed_sessions": ["qq:group:1"]})
 
     async def run_event(self, event):
@@ -129,8 +138,8 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
         self.plugin.config["ai_expression"] = True
         self.plugin._persona = AsyncMock(return_value="会话实际人格")
         lines = await self.run_event(Event("/猜动画 开始"))
-        self.assertIn("猜猜这部动画", lines[0])
-        self.assertIn("准备好下一道挑战吧", lines[0])
+        self.assertIn("猜猜这部动画", lines[-1])
+        self.assertIn("准备好下一道挑战吧", lines[-1])
         call = self.context.llm_generate.call_args.kwargs
         self.assertEqual(call["chat_provider_id"], "existing-provider")
         self.assertIn("会话实际人格", call["system_prompt"])
@@ -141,7 +150,7 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
         self.plugin._persona = AsyncMock(return_value="")
         self.context.llm_generate.side_effect = RuntimeError("provider offline")
         lines = await self.run_event(Event("/猜动画 开始"))
-        self.assertTrue(lines[0].startswith("猜猜这部动画"))
+        self.assertTrue(lines[-1].startswith("猜猜这部动画"))
 
     async def test_model_timeout_falls_back(self):
         self.plugin.config.update(ai_expression=True, ai_timeout_seconds=0.01)
@@ -153,7 +162,7 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
 
         self.context.llm_generate.side_effect = slow
         lines = await self.run_event(Event("/猜动画 开始"))
-        self.assertTrue(lines[0].startswith("猜猜这部动画"))
+        self.assertTrue(lines[-1].startswith("猜猜这部动画"))
 
     async def test_duplicate_event_suppresses_chat_after_reload(self):
         await self.run_event(Event("/猜动画 开始", mid="same"))

@@ -116,6 +116,7 @@ class AnimePartyEngine:
         if round_timeout_seconds < 0:
             raise ValueError("round_timeout_seconds must be non-negative")
         self._catalog = catalog
+        self.next_question = None
         self._random = random or Random()
         self._recent_limit = recent_limit
         self._handled_message_limit = handled_message_limit
@@ -260,7 +261,7 @@ class AnimePartyEngine:
         *,
         changed_difficulty: Difficulty | None = None,
     ) -> GameReply:
-        question = self._catalog.choose(
+        question = self.next_question or self._catalog.choose(
             difficulty=session.difficulty,
             excluded_subject_ids=set(session.recent_subject_ids),
             random=self._random,

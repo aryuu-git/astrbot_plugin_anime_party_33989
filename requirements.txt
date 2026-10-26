@@ -1,1 +1,1 @@
-# No third-party Python dependencies. AstrBot provides the runtime APIs.
+emoji>=2.14,<3

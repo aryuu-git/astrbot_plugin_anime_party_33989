@@ -9,21 +9,15 @@ from typing import Any
 from .models import Difficulty, Question
 
 
-def default_questions_path() -> Path:
-    """Return the bundled development catalog path.
-
-    Returns:
-        Path to the canonical Simplified Chinese question catalog.
-    """
-
-    return Path(__file__).resolve().parent / "data" / "questions.zh-CN.json"
-
-
 class QuestionCatalog:
-    def __init__(self, questions: Iterable[Question]) -> None:
+    def __init__(self, questions: Iterable[Question], *, allow_empty=False) -> None:
         self._questions = tuple(questions)
-        if not self._questions:
+        if not self._questions and not allow_empty:
             raise ValueError("question catalog cannot be empty")
+
+    def add(self, question):
+        if self.get(question.subject_id) is None:
+            self._questions = (*self._questions, question)
 
     @property
     def size(self) -> int:

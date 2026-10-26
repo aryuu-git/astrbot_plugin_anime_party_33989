@@ -31,6 +31,7 @@ class Question:
     difficulty: Difficulty
     hints: tuple[str, str, str]
     explanation: str
+    source_subject_id: int | None = None
 
     def accepts(self, answer: str) -> bool:
         candidate = normalize_answer(answer)

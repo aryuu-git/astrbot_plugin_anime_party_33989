@@ -21,7 +21,6 @@ paths = [
     )
 ]
 paths += sorted((root / "game").glob("*.py"))
-paths += [root / "game/data/questions.zh-CN.json"]
 paths += sorted((root / "docs").glob("*.md"))
 version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
 dest = root / "dist" / f"{root.name}-{version}.zip"

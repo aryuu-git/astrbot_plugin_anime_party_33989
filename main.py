@@ -8,14 +8,15 @@ from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent, MessageChain, filter
 from astrbot.api.star import Context, Star, StarTools, register
 
-from .game.catalog import QuestionCatalog, default_questions_path, load_questions
+from .game.catalog import QuestionCatalog
+from .game.generation import generate_question
 from .game.expression import expression_payload, valid_lead
 from .game.service import GameService
 
 PLUGIN_ID = "astrbot_plugin_anime_party_33989"
 
 
-@register(PLUGIN_ID, "aryuu-git", "Emoji 猜动画：确定性判题、分层提示、可选AI主持", "0.1.2")
+@register(PLUGIN_ID, "aryuu-git", "Emoji 猜动画：确定性判题、分层提示、可选AI主持", "0.2.0")
 class AnimePartyPlugin(Star):
     def __init__(self, context: Context, config):
         super().__init__(context)
@@ -26,23 +27,11 @@ class AnimePartyPlugin(Star):
         self.service = self._build_service()
 
     def _build_service(self):
-        source = self.config.get("question_source", "builtin")
-        builtin = load_questions(default_questions_path())
-        if source == "builtin":
-            catalog = builtin
-        else:
-            custom = load_questions(self.data_dir / "custom_questions.json")
-            if source == "custom":
-                catalog = custom
-            elif source == "merged":
-                combined = {q.subject_id: q for q in builtin.questions}
-                combined.update({q.subject_id: q for q in custom.questions})
-                catalog = QuestionCatalog(combined.values())
-            else:
-                raise ValueError("question_source 必须为 builtin/custom/merged")
+        catalog = QuestionCatalog([], allow_empty=True)
         return GameService(
-            self.data_dir / "game.db",
+            self.data_dir / "dynamic-game.db",
             catalog,
+            require_generation=True,
             timeout=float(self.config.get("round_timeout_minutes", 15)) * 60,
             recent_limit=int(self.config.get("recent_question_limit", 8)),
             plain_answers=bool(self.config.get("allow_known_title_answers", True)),
@@ -59,7 +48,7 @@ class AnimePartyPlugin(Star):
         if self.service.timeout > 0:
             self._timer = asyncio.create_task(self._expire_loop())
         logger.info(
-            "动画派对已就绪：%d道题，%d个允许会话。",
+            "动画派对动态模式已就绪：缓存%d道历史生成题，%d个允许会话。",
             self.service.catalog.size,
             len(self.config.get("allowed_sessions", [])),
         )
@@ -92,6 +81,34 @@ class AnimePartyPlugin(Star):
             return
         message_id = str(event.message_obj.message_id or uuid.uuid4())
         async with self._lock(session):
+            prepared = None
+            difficulty = await asyncio.to_thread(self.service.generation_request, session, message_id, text)
+            if difficulty is not None:
+                event.set_extra("anime_party_consumed", True)
+                event.stop_event()
+                await event.send(event.plain_result("在编一道新的 5／7／5 题目，稍等一下。"))
+                try:
+                    provider_id = self.config.get(
+                        "provider_id", ""
+                    ) or await self.context.get_current_chat_provider_id(session)
+                    excluded = await asyncio.to_thread(self.service.recent_titles)
+                    prepared = await asyncio.wait_for(
+                        generate_question(
+                            self.context,
+                            provider_id,
+                            difficulty,
+                            excluded,
+                            self.config.get("generation_proxy", ""),
+                        ),
+                        timeout=float(self.config.get("generation_timeout_seconds", 120)),
+                    )
+                    await asyncio.to_thread(self.service.register_generated, prepared)
+                except Exception as exc:
+                    logger.warning("动态出题未完成：%s", type(exc).__name__)
+                    yield event.plain_result(
+                        "这次没能生成并核对合格的 5／7／5 题目。稍后说“/猜动画 开始”再试；不会拿旧题补上。"
+                    )
+                    return
             result = await asyncio.to_thread(
                 self.service.handle,
                 session,
@@ -99,6 +116,7 @@ class AnimePartyPlugin(Star):
                 str(event.get_sender_id()),
                 text,
                 admin=event.is_admin(),
+                prepared_question=prepared,
             )
             if not result.consumed:
                 return
